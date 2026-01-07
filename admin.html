@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Gestion des Messages</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container" style="padding: 2rem;">
+        <h1>Gestion des Messages</h1>
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        async function loadMessages() {
+            const res = await fetch('/messages');
+            const messages = await res.json();
+            const container = document.getElementById('messages');
+            container.innerHTML = messages.map(msg => `
+                <div class="message-card" style="border:1px solid var(--accent-primary); padding:1rem; margin:1rem 0; border-radius:10px;">
+                    <h3>${msg.subject}</h3>
+                    <p><strong>De:</strong> ${msg.name} (${msg.email})</p>
+                    <p>${msg.message}</p>
+                    <p><small>${new Date(msg.date).toLocaleString()}</small></p>
+                    ${!msg.replied ? `<button onclick="reply(${msg.id})" style="background:var(--accent-primary); color:var(--bg-primary); border:none; padding:0.5rem 1rem; border-radius:5px; cursor:pointer;">Répondre</button>` : '<p style="color:var(--accent-tertiary);">Répondu</p>'}
+                    <div id="reply-${msg.id}" style="display:none; margin-top:1rem;">
+                        <textarea id="replyText-${msg.id}" placeholder="Votre réponse..." style="width:100%; min-height:100px; padding:0.5rem; border-radius:5px; border:1px solid var(--accent-primary); background:var(--bg-primary); color:var(--text-primary);"></textarea>
+                        <button onclick="sendReply(${msg.id})" style="margin-top:0.5rem; background:var(--accent-secondary); color:var(--bg-primary); border:none; padding:0.5rem 1rem; border-radius:5px; cursor:pointer;">Envoyer Réponse</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function reply(id) {
+            document.getElementById(`reply-${id}`).style.display = 'block';
+        }
+
+        async function sendReply(id) {
+            const text = document.getElementById(`replyText-${id}`).value;
+            await fetch('/reply', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id, replyMessage: text})
+            });
+            alert('Réponse envoyée!');
+            loadMessages();
+        }
+
+        loadMessages();
+    </script>
+</body>
+</html>
