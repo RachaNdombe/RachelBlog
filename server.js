@@ -1,10 +1,60 @@
 const express = require('express');
+const session = require('express-session');
+
+
+const app = express();
+app.use(express.json()); // Doit être AVANT les routes qui utilisent req.body
+app.use(session({
+  secret: 'votre_secret_admin',
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Connexion à la base MySQL
+const mysql = require('mysql2');
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root', // à adapter si besoin
+  password: '', // à adapter si besoin
+  database: 'blog-chella'
+});
+db.connect((err) => {
+  if (err) {
+    console.error('Erreur connexion MySQL:', err);
+  } else {
+    console.log('Connecté à MySQL blog-chella');
+  }
+});
+
+// Route de login admin
+app.post('/admin-login', (req, res) => {
+  const { username, password } = req.body;
+  db.query('SELECT * FROM admin WHERE username = ? AND password = ?', [username, password], (err, results) => {
+    if (err) {
+      console.error('Erreur requête admin:', err);
+      return res.status(500).json({ success: false, error: 'Erreur serveur' });
+    }
+    if (results.length > 0) {
+      req.session.isAdmin = true;
+      res.json({ success: true });
+    } else {
+      res.json({ success: false });
+    }
+  });
+});
+
+// Gestion globale des erreurs pour le debug
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
+});
+
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-
-const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -52,9 +102,14 @@ app.post('/contact', (req, res) => {
   });
 });
 
-// Admin page
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+
+// Middleware pour protéger admin.html
+app.get('/admin.html', (req, res, next) => {
+  if (req.session && req.session.isAdmin) {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+  } else {
+    res.redirect('/admin-login.html');
+  }
 });
 
 // Get messages (for admin)
@@ -100,4 +155,9 @@ app.post('/reply', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  setInterval(() => {
+    console.log('Serveur toujours actif...');
+  }, 5000);
+});
