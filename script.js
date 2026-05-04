@@ -3,44 +3,44 @@
 // ====================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize all features
-    initCustomCursor();
-    initNavbar();
-    initMobileMenu();
-    initSmoothScroll();
-    initScrollAnimations();
-    initActiveNavLink();
-    initContactForm();
-    
-        // Gestion du login admin
-        const loginForm = document.getElementById('admin-login-form');
-        if (loginForm) {
-            loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const errorMsg = document.getElementById('login-error');
-                errorMsg.textContent = '';
+    // Gestion du login admin (toujours prioritaire)
+    const loginForm = document.getElementById('admin-login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('login-error');
+            errorMsg.textContent = '';
 
-                try {
-                    const response = await fetch('/admin-login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        window.location.href = 'admin.html';
-                    } else {
-                        errorMsg.textContent = 'Identifiants incorrects';
-                    }
-                } catch (err) {
-                    errorMsg.textContent = 'Erreur serveur';
+            try {
+                const response = await fetch('/admin-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = 'admin.html';
+                } else {
+                    errorMsg.textContent = 'Identifiants incorrects';
                 }
-            });
-        }
+            } catch (err) {
+                errorMsg.textContent = 'Erreur serveur';
+            }
+        });
+    }
+
+    // Désactivez temporairement les autres initialisations pour éviter les erreurs
+    // initCustomCursor();
+    // initNavbar();
+    // initMobileMenu();
+    // initSmoothScroll();
+    // initScrollAnimations();
+    // initActiveNavLink();
+    // initContactForm();
 });
 
 // ====================================

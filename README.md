@@ -30,14 +30,43 @@ Ce portfolio présente :
 - Effets parallax sur les éléments du hero
 - Thème sombre avec palette de couleurs cohérente
 
-## Installation
+## Installation (local Node.js)
 
 1. Clonez ou téléchargez ce repository
 2. Installez les dépendances : `npm install`
-3. Configurez l'email dans `server.js` (remplacez `'YOUR_APP_PASSWORD'` par votre mot de passe d'application Gmail)
+3. Ajustez les variables dans `.env` (DB, mail, session)
 4. Lancez le serveur : `npm start`
 5. Ouvrez `http://localhost:3000` dans votre navigateur
-6. Pour accéder à l'admin des messages : `http://localhost:3000/admin`
+6. Pour accéder à l'admin des messages : `http://localhost:3000/admin-login.html`
+
+## Déploiement local avec Docker
+
+1. Vérifiez que Docker Desktop est démarré
+2. Depuis le dossier du projet, lancez:
+   - `docker compose up --build`
+3. Ouvrez:
+   - Site: `http://localhost:3000`
+   - Login admin: `http://localhost:3000/admin-login.html`
+4. Pour arrêter:
+   - `docker compose down`
+5. Pour arrêter et supprimer aussi les données MySQL:
+   - `docker compose down -v`
+
+### Variables d'environnement
+
+- Le projet utilise `.env` (un `.env.example` est fourni).
+- Variables clés:
+  - `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
+  - `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE`
+  - `SESSION_SECRET`
+  - `MAIL_USER`, `MAIL_PASS`
+
+### Base de données initiale
+
+- Au premier démarrage Docker, MySQL exécute automatiquement `docker/mysql/init/001_init.sql`.
+- Ce script crée les tables `admin` et `messages`, puis ajoute un admin par défaut:
+  - `username: admin`
+  - `password: admin123`
 
 ## Personnalisation
 
