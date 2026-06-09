@@ -2,6 +2,80 @@
 // Rachel Ndombe Portfolio - JavaScript
 // ====================================
 
+const SKILLS_DATA = {
+    fullstack: {
+        title: 'Fullstack Development',
+        icon: 'bi-code-slash',
+        description: 'Conception et développement d\'applications web complètes, de l\'interface utilisateur aux APIs backend sécurisées.',
+        level: 90,
+        technologies: ['PHP', 'Laravel', 'JavaScript', 'AngularJS', 'TypeScript', 'AdonisJS', 'HTML5', 'CSS3', 'Bootstrap', 'Tailwind CSS'],
+        achievements: [
+            'Développement d\'applications web de gestion',
+            'Systèmes d\'authentification JWT',
+            'APIs REST sécurisées',
+            'Intégration Frontend / Backend',
+            'Applications de suivi et reporting',
+            'Développement d\'interfaces responsives'
+        ]
+    },
+    'cloud-computing': {
+        title: 'Cloud Computing',
+        icon: 'bi-cloud-arrow-up',
+        description: 'Maîtrise des fondamentaux du cloud, de l\'architecture aux déploiements applicatifs et à la supervision.',
+        level: 85,
+        technologies: ['AWS Cloud Fundamentals', 'Architecture Cloud', 'Virtualisation', 'Services Cloud', 'Déploiement d\'applications', 'Monitoring et supervision'],
+        achievements: [
+            'Déploiement de sites web sur AWS',
+            'Configuration CloudFront',
+            'Utilisation d\'API Gateway',
+            'Déploiement Serverless avec Lambda',
+            'Hébergement de sites statiques sur S3'
+        ]
+    },
+    linux: {
+        title: 'Linux System Administration',
+        icon: 'bi-terminal',
+        description: 'Administration de serveurs Linux, gestion des utilisateurs, automatisation et surveillance des systèmes.',
+        level: 88,
+        technologies: ['Ubuntu Server', 'CentOS / Rocky Linux', 'Gestion des utilisateurs', 'Permissions Linux', 'Bash Scripting', 'Gestion des services'],
+        achievements: [
+            'Configuration de serveurs Linux',
+            'Administration système',
+            'Gestion des processus',
+            'Surveillance système',
+            'Automatisation de tâches'
+        ]
+    },
+    cybersecurity: {
+        title: 'Networking & Cybersecurity',
+        icon: 'bi-shield-lock',
+        description: 'Sécurisation des infrastructures, analyse réseau et application des bonnes pratiques de cybersécurité.',
+        level: 82,
+        technologies: ['TCP/IP', 'DNS', 'DHCP', 'VPN', 'Firewall', 'Sécurité réseau', 'Analyse des vulnérabilités', 'Contrôle d\'accès'],
+        achievements: [
+            'Analyse de trafic réseau',
+            'Configuration réseau',
+            'Études de cybersécurité',
+            'Application du principe du moindre privilège',
+            'Sensibilisation à la sécurité informatique'
+        ]
+    },
+    aws: {
+        title: 'Cloud (AWS)',
+        icon: 'bi-cloud-check',
+        description: 'Conception et déploiement de solutions sur Amazon Web Services, de l\'hébergement à l\'architecture serverless.',
+        level: 85,
+        technologies: ['EC2', 'S3', 'IAM', 'Lambda', 'API Gateway', 'CloudFront', 'Elastic Beanstalk', 'CloudWatch'],
+        achievements: [
+            'Déploiement WordPress avec Beanstalk',
+            'Architecture Serverless',
+            'Distribution CloudFront',
+            'Gestion des accès IAM',
+            'Hébergement d\'applications web'
+        ]
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     // Gestion du login admin (toujours prioritaire)
     const loginForm = document.getElementById('admin-login-form');
@@ -40,7 +114,72 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollAnimations();
     initActiveNavLink();
     initContactForm();
+    initSkillModals();
 });
+
+// ====================================
+// Skill Modals
+// ====================================
+function initSkillModals() {
+    const modal = document.getElementById('skillModal');
+    const skillButtons = document.querySelectorAll('.skill-item[data-skill]');
+
+    if (!modal || !skillButtons.length) return;
+
+    const titleEl = document.getElementById('skillModalTitle');
+    const descEl = document.getElementById('skillModalDesc');
+    const iconEl = document.querySelector('#skillModalIcon i');
+    const levelEl = document.getElementById('skillModalLevel');
+    const levelBar = document.getElementById('skillModalLevelBar');
+    const techEl = document.getElementById('skillModalTech');
+    const achievementsEl = document.getElementById('skillModalAchievements');
+    const ctaEl = document.getElementById('skillModalCta');
+
+    function openSkillModal(skillId) {
+        const data = SKILLS_DATA[skillId];
+        if (!data) return;
+
+        titleEl.textContent = data.title;
+        descEl.textContent = data.description;
+        iconEl.className = `bi ${data.icon}`;
+        levelEl.textContent = `${data.level}%`;
+        levelBar.style.width = '0';
+
+        techEl.innerHTML = data.technologies.map(t => `<li>${t}</li>`).join('');
+        achievementsEl.innerHTML = data.achievements.map(a => `<li>${a}</li>`).join('');
+
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        requestAnimationFrame(() => {
+            levelBar.style.width = `${data.level}%`;
+        });
+    }
+
+    function closeSkillModal() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        levelBar.style.width = '0';
+    }
+
+    skillButtons.forEach(btn => {
+        btn.addEventListener('click', () => openSkillModal(btn.dataset.skill));
+    });
+
+    modal.querySelectorAll('[data-close-modal]').forEach(el => {
+        el.addEventListener('click', closeSkillModal);
+    });
+
+    ctaEl.addEventListener('click', closeSkillModal);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeSkillModal();
+        }
+    });
+}
 
 // ====================================
 // Custom Cursor
