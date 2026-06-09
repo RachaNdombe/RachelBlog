@@ -33,14 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Désactivez temporairement les autres initialisations pour éviter les erreurs
-    // initCustomCursor();
-    // initNavbar();
-    // initMobileMenu();
-    // initSmoothScroll();
-    // initScrollAnimations();
-    // initActiveNavLink();
-    // initContactForm();
+    initCustomCursor();
+    initNavbar();
+    initMobileMenu();
+    initSmoothScroll();
+    initScrollAnimations();
+    initActiveNavLink();
+    initContactForm();
 });
 
 // ====================================
@@ -137,35 +136,49 @@ function initMobileMenu() {
     
     if (!menuToggle || !navLinks) return;
     
-    // Create mobile nav overlay
+    const mobileNavBackdrop = document.createElement('div');
+    mobileNavBackdrop.className = 'mobile-nav-backdrop';
+
     const mobileNav = document.createElement('div');
     mobileNav.className = 'mobile-nav';
     mobileNav.innerHTML = navLinks.outerHTML;
+
+    document.body.appendChild(mobileNavBackdrop);
     document.body.appendChild(mobileNav);
-    
+
     const mobileNavLinks = mobileNav.querySelectorAll('.nav-link');
-    
+
+    function closeMobileNav() {
+        menuToggle.classList.remove('active');
+        mobileNav.classList.remove('active');
+        mobileNavBackdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function openMobileNav() {
+        menuToggle.classList.add('active');
+        mobileNav.classList.add('active');
+        mobileNavBackdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
     menuToggle.addEventListener('click', () => {
-        menuToggle.classList.toggle('active');
-        mobileNav.classList.toggle('active');
-        document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+        if (mobileNav.classList.contains('active')) {
+            closeMobileNav();
+        } else {
+            openMobileNav();
+        }
     });
-    
-    // Close mobile nav on link click
+
+    mobileNavBackdrop.addEventListener('click', closeMobileNav);
+
     mobileNavLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            menuToggle.classList.remove('active');
-            mobileNav.classList.remove('active');
-            document.body.style.overflow = '';
-        });
+        link.addEventListener('click', closeMobileNav);
     });
-    
-    // Close on escape key
+
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
-            menuToggle.classList.remove('active');
-            mobileNav.classList.remove('active');
-            document.body.style.overflow = '';
+            closeMobileNav();
         }
     });
 }
@@ -205,14 +218,14 @@ function initSmoothScroll() {
 function initScrollAnimations() {
     // Elements to animate
     const animateElements = document.querySelectorAll(
-        '.section-header, .about-image, .about-content, .project-card, .blog-card, .contact-info, .contact-form, .skill-item'
+        '.section-header, .about-image, .about-content, .project-card, .cert-card, .certifications-cta, .blog-card, .contact-info, .contact-form, .skill-item'
     );
     
     // Add fade-in class
     animateElements.forEach((el, index) => {
         el.classList.add('fade-in');
         // Add stagger class for grouped elements
-        if (el.classList.contains('skill-item') || el.classList.contains('project-card') || el.classList.contains('blog-card')) {
+        if (el.classList.contains('skill-item') || el.classList.contains('project-card') || el.classList.contains('cert-card') || el.classList.contains('blog-card')) {
             el.classList.add(`stagger-${(index % 4) + 1}`);
         }
     });
@@ -346,20 +359,7 @@ function showNotification(message, type = 'info') {
     `;
     
     // Style the notification
-    Object.assign(notification.style, {
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        padding: '15px 20px',
-        borderRadius: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '15px',
-        zIndex: '10001',
-        animation: 'slideInRight 0.3s ease',
-        maxWidth: '400px',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
-    });
+    // Layout handled by .notification in styles.css
     
     // Type-specific styles
     if (type === 'success') {
