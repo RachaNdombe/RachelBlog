@@ -271,47 +271,61 @@ function initNavbar() {
 // ====================================
 function initMobileMenu() {
     const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-    
+    const navLinks = document.querySelector('.navbar .nav-links');
+
     if (!menuToggle || !navLinks) return;
-    
-    const mobileNavBackdrop = document.createElement('div');
-    mobileNavBackdrop.className = 'mobile-nav-backdrop';
 
     const mobileNav = document.createElement('div');
     mobileNav.className = 'mobile-nav';
-    mobileNav.innerHTML = navLinks.outerHTML;
+    mobileNav.setAttribute('aria-hidden', 'true');
+    mobileNav.innerHTML = `
+        <div class="mobile-nav-header">
+            <a href="#accueil" class="logo">R<span class="logo-dot">.</span>N</a>
+            <div class="mobile-nav-actions">
+                <button type="button" class="mobile-nav-close" aria-label="Fermer le menu">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+                <a href="#contact" class="mobile-nav-cta">Me contacter</a>
+            </div>
+        </div>
+    `;
 
-    document.body.appendChild(mobileNavBackdrop);
+    const mobileNavBody = document.createElement('nav');
+    mobileNavBody.className = 'mobile-nav-body';
+    mobileNavBody.innerHTML = navLinks.outerHTML;
+
+    const mobileNavList = mobileNavBody.querySelector('.nav-links');
+    if (mobileNavList) {
+        mobileNavList.classList.remove('nav-links');
+        mobileNavList.classList.add('mobile-nav-links');
+    }
+
+    mobileNav.appendChild(mobileNavBody);
     document.body.appendChild(mobileNav);
 
+    const closeBtn = mobileNav.querySelector('.mobile-nav-close');
     const mobileNavLinks = mobileNav.querySelectorAll('.nav-link');
+    const mobileNavLogo = mobileNav.querySelector('.mobile-nav-header .logo');
+    const mobileNavCta = mobileNav.querySelector('.mobile-nav-cta');
 
     function closeMobileNav() {
-        menuToggle.classList.remove('active');
         mobileNav.classList.remove('active');
-        mobileNavBackdrop.classList.remove('active');
+        mobileNav.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
     }
 
     function openMobileNav() {
-        menuToggle.classList.add('active');
         mobileNav.classList.add('active');
-        mobileNavBackdrop.classList.add('active');
+        mobileNav.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
     }
 
-    menuToggle.addEventListener('click', () => {
-        if (mobileNav.classList.contains('active')) {
-            closeMobileNav();
-        } else {
-            openMobileNav();
-        }
-    });
+    menuToggle.addEventListener('click', openMobileNav);
+    closeBtn.addEventListener('click', closeMobileNav);
 
-    mobileNavBackdrop.addEventListener('click', closeMobileNav);
-
-    mobileNavLinks.forEach(link => {
+    [...mobileNavLinks, mobileNavLogo, mobileNavCta].forEach(link => {
         link.addEventListener('click', closeMobileNav);
     });
 
