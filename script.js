@@ -7,7 +7,7 @@ const SKILLS_DATA = {
         title: 'Fullstack Development',
         icon: 'bi-code-slash',
         description: 'Conception et développement d\'applications web complètes, de l\'interface utilisateur aux APIs backend sécurisées.',
-        level: 90,
+        level: 80,
         technologies: ['PHP', 'Laravel', 'JavaScript', 'AngularJS', 'TypeScript', 'AdonisJS', 'HTML5', 'CSS3', 'Bootstrap', 'Tailwind CSS'],
         achievements: [
             'Développement d\'applications web de gestion',
@@ -22,7 +22,7 @@ const SKILLS_DATA = {
         title: 'Cloud Computing',
         icon: 'bi-cloud-arrow-up',
         description: 'Maîtrise des fondamentaux du cloud, de l\'architecture aux déploiements applicatifs et à la supervision.',
-        level: 85,
+        level: 70,
         technologies: ['AWS Cloud Fundamentals', 'Architecture Cloud', 'Virtualisation', 'Services Cloud', 'Déploiement d\'applications', 'Monitoring et supervision'],
         achievements: [
             'Déploiement de sites web sur AWS',
@@ -36,7 +36,7 @@ const SKILLS_DATA = {
         title: 'Linux System Administration',
         icon: 'bi-terminal',
         description: 'Administration de serveurs Linux, gestion des utilisateurs, automatisation et surveillance des systèmes.',
-        level: 88,
+        level: 70,
         technologies: ['Ubuntu Server', 'CentOS / Rocky Linux', 'Gestion des utilisateurs', 'Permissions Linux', 'Bash Scripting', 'Gestion des services'],
         achievements: [
             'Configuration de serveurs Linux',
@@ -50,7 +50,7 @@ const SKILLS_DATA = {
         title: 'Networking & Cybersecurity',
         icon: 'bi-shield-lock',
         description: 'Sécurisation des infrastructures, analyse réseau et application des bonnes pratiques de cybersécurité.',
-        level: 82,
+        level: 70,
         technologies: ['TCP/IP', 'DNS', 'DHCP', 'VPN', 'Firewall', 'Sécurité réseau', 'Analyse des vulnérabilités', 'Contrôle d\'accès'],
         achievements: [
             'Analyse de trafic réseau',
@@ -64,7 +64,7 @@ const SKILLS_DATA = {
         title: 'Cloud (AWS)',
         icon: 'bi-cloud-check',
         description: 'Conception et déploiement de solutions sur Amazon Web Services, de l\'hébergement à l\'architecture serverless.',
-        level: 85,
+        level: 70,
         technologies: ['EC2', 'S3', 'IAM', 'Lambda', 'API Gateway', 'CloudFront', 'Elastic Beanstalk', 'CloudWatch'],
         achievements: [
             'Déploiement WordPress avec Beanstalk',
