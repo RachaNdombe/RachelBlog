@@ -37,7 +37,7 @@ const SKILLS_DATA = {
         icon: 'bi-terminal',
         description: 'Administration de serveurs Linux, gestion des utilisateurs, automatisation et surveillance des systèmes.',
         level: 70,
-        technologies: ['Ubuntu Server', 'CentOS / Rocky Linux', 'Gestion des utilisateurs', 'Permissions Linux', 'Bash Scripting', 'Gestion des services'],
+        technologies: ['Linux (installation & graphique, hyperviseurs)', 'Gestion des utilisateurs', 'Permissions Linux', 'Bash Scripting', 'Gestion des services'],
         achievements: [
             'Configuration de serveurs Linux',
             'Administration système',
