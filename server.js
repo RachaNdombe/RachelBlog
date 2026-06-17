@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const nodemailer = require('nodemailer');
@@ -14,7 +15,17 @@ const DB_USER = process.env.DB_USER || 'root';
 const DB_PASSWORD = process.env.DB_PASSWORD || '';
 const DB_NAME = process.env.DB_NAME || 'blog-chella';
 const MAIL_USER = process.env.MAIL_USER || 'rachelndombe64@gmail.com';
-const MAIL_PASS = process.env.MAIL_PASS || 'kjcpyugzgqomywtq';
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    type: 'OAuth2',
+    user: MAIL_USER,
+    clientId: process.env.OAUTH_CLIENT_ID,
+    clientSecret: process.env.OAUTH_CLIENT_SECRET,
+    refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+  },
+});
 
 app.use(express.json()); // Doit être AVANT les routes qui utilisent req.body
 app.use(express.urlencoded({ extended: true }));
@@ -90,25 +101,10 @@ process.on('unhandledRejection', (reason, promise) => {
 app.use(cors());
 app.use(express.static('.')); // Serve static files
 
-// Configure nodemailer (update with your email credentials)
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // false car on utilise TLS sur le port 587
-  auth: {
-    user: MAIL_USER,
-    pass: MAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false // Indispensable pour éviter que Render ne bloque la connexion
-  }
-});
-
 // Endpoint for contact form
 app.post('/contact', (req, res) => {
   const { name, email, subject, message } = req.body;
 
-  // Send email to owner
   const mailOptions = {
     from: MAIL_USER,
     replyTo: email,
@@ -117,7 +113,7 @@ app.post('/contact', (req, res) => {
     text: `From: ${name} (${email})\n\n${message}`
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
+  transporter.sendMail(mailOptions, (error) => {
     if (error) {
       console.error(error);
       return res.status(500).json({ error: 'Failed to send email' });
