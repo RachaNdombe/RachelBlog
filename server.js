@@ -17,7 +17,9 @@ const DB_NAME = process.env.DB_NAME || 'blog-chella';
 const MAIL_USER = process.env.MAIL_USER || 'rachelndombe64@gmail.com';
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     type: 'OAuth2',
     user: MAIL_USER,
