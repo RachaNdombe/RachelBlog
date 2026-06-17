@@ -92,10 +92,15 @@ app.use(express.static('.')); // Serve static files
 
 // Configure nodemailer (update with your email credentials)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // false car on utilise TLS sur le port 587
   auth: {
     user: MAIL_USER,
     pass: MAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false // Indispensable pour éviter que Render ne bloque la connexion
   }
 });
 
