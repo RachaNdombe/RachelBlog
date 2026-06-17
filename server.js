@@ -1,10 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
-const nodemailer = require('nodemailer');
 const cors = require('cors');
 const path = require('path');
 const mysql = require('mysql2');
+const { google } = require('googleapis');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -16,20 +16,19 @@ const DB_PASSWORD = process.env.DB_PASSWORD || '';
 const DB_NAME = process.env.DB_NAME || 'blog-chella';
 const MAIL_USER = process.env.MAIL_USER || 'rachelndombe64@gmail.com';
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    type: 'OAuth2',
-    user: MAIL_USER,
-    clientId: process.env.OAUTH_CLIENT_ID,
-    clientSecret: process.env.OAUTH_CLIENT_SECRET,
-    refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-  },
+const oauth2Client = new google.auth.OAuth2(
+  process.env.OAUTH_CLIENT_ID,
+  process.env.OAUTH_CLIENT_SECRET,
+  'https://developers.google.com/oauthplayground'
+);
+
+oauth2Client.setCredentials({
+  refresh_token: process.env.OAUTH_REFRESH_TOKEN
 });
 
-app.use(express.json()); // Doit être AVANT les routes qui utilisent req.body
+const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: SESSION_SECRET,
@@ -37,7 +36,6 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// Connexion à la base MySQL
 const db = mysql.createConnection({
   host: DB_HOST,
   port: DB_PORT,
@@ -53,7 +51,6 @@ db.connect((err) => {
   }
 });
 
-// Route de login admin
 app.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
   db.query('SELECT * FROM admin WHERE username = ? AND password = ?', [username, password], (err, results) => {
@@ -92,7 +89,6 @@ function requireAdmin(req, res, next) {
   return res.status(401).json({ success: false, error: 'Unauthorized' });
 }
 
-// Gestion globale des erreurs pour le debug
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
 });
@@ -101,26 +97,35 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 app.use(cors());
-app.use(express.static('.')); // Serve static files
+app.use(express.static('.'));
 
-// Endpoint for contact form
+function buildRawEmail(from, to, replyTo, subject, message) {
+  const emailLines = [
+    `From: ${from}`,
+    `To: ${to}`,
+    `Reply-To: ${replyTo}`,
+    `Subject: ${subject}`,
+    'Content-Type: text/plain; charset=utf-8',
+    '',
+    message
+  ];
+  return Buffer.from(emailLines.join('\n'))
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
 app.post('/contact', (req, res) => {
   const { name, email, subject, message } = req.body;
+  const emailContent = `From: ${name} (${email})\n\n${message}`;
+  const raw = buildRawEmail(MAIL_USER, MAIL_USER, email, `Contact: ${subject}`, emailContent);
 
-  const mailOptions = {
-    from: MAIL_USER,
-    replyTo: email,
-    to: MAIL_USER,
-    subject: `Contact: ${subject}`,
-    text: `From: ${name} (${email})\n\n${message}`
-  };
-
-  transporter.sendMail(mailOptions, (error) => {
-    if (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to send email' });
-    }
-
+  gmail.users.messages.send({
+    userId: 'me',
+    requestBody: { raw }
+  })
+  .then(() => {
     db.query(
       'INSERT INTO messages (name, email, subject, message, date, replied) VALUES (?, ?, ?, ?, NOW(), 0)',
       [name, email, subject, message],
@@ -132,11 +137,13 @@ app.post('/contact', (req, res) => {
         return res.json({ success: true, message: 'Message sent successfully' });
       }
     );
+  })
+  .catch((err) => {
+    console.error('Erreur API Gmail:', err);
+    return res.status(500).json({ error: 'Failed to send email via API' });
   });
 });
 
-
-// Middleware pour protéger admin.html
 app.get('/admin.html', (req, res, next) => {
   if (req.session && req.session.isAdmin) {
     res.sendFile(path.join(__dirname, 'admin.html'));
@@ -152,7 +159,6 @@ app.get('/admin', (req, res) => {
   return res.redirect('/admin-login.html');
 });
 
-// Get messages (for admin)
 app.get('/messages', requireAdmin, (req, res) => {
   db.query(
     'SELECT id, name, email, subject, message, date, replied, replyDate FROM messages ORDER BY date DESC',
@@ -166,7 +172,6 @@ app.get('/messages', requireAdmin, (req, res) => {
   );
 });
 
-// Reply endpoint
 app.post('/reply', requireAdmin, (req, res) => {
   const { id, replyMessage } = req.body;
   db.query('SELECT id, email, subject FROM messages WHERE id = ?', [id], (findErr, findRows) => {
@@ -179,19 +184,13 @@ app.post('/reply', requireAdmin, (req, res) => {
     }
 
     const msg = findRows[0];
-    const mailOptions = {
-      from: MAIL_USER,
-      to: msg.email,
-      subject: `Re: ${msg.subject}`,
-      text: replyMessage
-    };
+    const raw = buildRawEmail(MAIL_USER, msg.email, MAIL_USER, `Re: ${msg.subject}`, replyMessage);
 
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Failed to send reply' });
-      }
-
+    gmail.users.messages.send({
+      userId: 'me',
+      requestBody: { raw }
+    })
+    .then(() => {
       db.query(
         'UPDATE messages SET replied = 1, replyDate = NOW() WHERE id = ?',
         [id],
@@ -203,13 +202,14 @@ app.post('/reply', requireAdmin, (req, res) => {
           return res.json({ success: true });
         }
       );
+    })
+    .catch((err) => {
+      console.error('Erreur API Gmail (Reply):', err);
+      return res.status(500).json({ error: 'Failed to send reply' });
     });
   });
 });
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  setInterval(() => {
-    console.log('Serveur toujours actif...');
-  }, 5000);
 });
